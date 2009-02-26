@@ -18,24 +18,62 @@
 
 import os
 import wsgiref.handlers
+import logging
 
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
+from google.appengine.api.urlfetch import fetch
 
+GOOGLE_KEY = 'ABQIAAAAwvFhEUtSIa3VRWVU970fZRQXq7bWTC04Ff1KKaIsErBhwE7B5xSeyI_RzYuuCer6UmCT_rrEo49_dw'
+
+PROXIES = {
+        'alt' :
+          'http://gisdata.usgs.gov/xmlwebservices2/elevation_service.asmx/getElevation?X_Value=%(lng)s&Y_Value=%(lat)s&Elevation_Units=METERS&Source_Layer=-1&Elevation_Only=true',
+        }
 
 class MainHandler(webapp.RequestHandler):
 
   def get(self):
-      path = os.path.join(os.path.dirname(__file__), 'index.html')
+      path = os.path.join(os.path.dirname(__file__), 'templates', 'index.html')
       template_values = {
-              'key': 'ABQIAAAAwvFhEUtSIa3VRWVU970fZRQXq7bWTC04Ff1KKaIsErBhwE7B5xSeyI_RzYuuCer6UmCT_rrEo49_dw'
+              'key': GOOGLE_KEY
               }
       self.response.out.write(template.render(path, template_values))
 
+class AltHandler(webapp.RequestHandler):
+
+  def get(self):
+      path = os.path.join(os.path.dirname(__file__), 'templates', 'alt.html')
+      template_values = {
+              'key': GOOGLE_KEY
+              }
+      self.response.out.write(template.render(path, template_values))
+
+class ProxyHandler(webapp.RequestHandler):
+
+    def get(self):
+        url = PROXIES[self.request.get('site')]
+        args = self.request.arguments()
+        logging.info('args %s' % args)
+        args.remove('site')
+        queries = {}
+        for argument in args:
+            logging.info('getting %s' % argument)
+            value = self.request.get(argument, '')
+            logging.info('got %s' % value)
+            queries[argument] = value
+        logging.info(queries)
+        logging.info(url)
+        url = url % queries
+        data = fetch(url) 
+        self.response.out.write(data.content)
+
 
 def main():
-  application = webapp.WSGIApplication([('/', MainHandler)],
-                                       debug=True)
+  application = webapp.WSGIApplication([('/', MainHandler),
+      ('/alt', AltHandler),
+      ('/proxy', ProxyHandler)
+      ], debug=True)
   wsgiref.handlers.CGIHandler().run(application)
 
 
