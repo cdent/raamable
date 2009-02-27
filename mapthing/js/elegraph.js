@@ -1,8 +1,8 @@
 
 function load() {
-    var maxNodes = 40;
-    var nodes = 0;
     var altitudes = [];
+    var markers = [];
+    var dirs = [];
 
     function drawProfile() {
         var min=Infinity, max=0;
@@ -38,20 +38,29 @@ function load() {
         });
     }
 
-    if (GBrowserIsCompatible()) {
-        var map = new GMap2(document.getElementById("map"));
-        map.setCenter(new GLatLng(0, 0), 0);
-        map.addControl(new GLargeMapControl());
-        var dirn = new GDirections(map);
-
-        GEvent.addListener(dirn,"load",function() {
-                nodes = 0;
-                var poly=dirn.getPolyline();
-                for (var i=0; i<maxNodes; i++) {
-                    getAltitude(poly,i)
+    function establishRoute(map) {
+        GDownloadUrl('/data/latlongelv.csv', function(data) {
+                lines = data.split("\n");
+                for (var i = 0; i < lines.length; i++) {
+                    info = lines[i].split(',');
+                    markers[i] =  new GMarker(new GLatLng(info[0], info[1]), {title:info[2]});
+                    map.addOverlay(markers[i]);
+                    altitudes[i] = info[2];
+                    /* if(i > 0) {
+                        dirs[i] = new GDirections();
+                        dirs[i].loadFromWaypoints([markers[i-1].getLatLng().toUrlValue(), markers[i].getLatLng().toUrlValue()]);
+//                        map.addOverlay(dirs[i].getPolyline());
+                    } */
                 }
         });
+    }
 
-        dirn.load( "from: Los Angeles to: New York",{getPolyline:true});
+
+    if (GBrowserIsCompatible()) {
+        var map = new GMap2(document.getElementById("map"));
+        map.setCenter(new GLatLng(36, -100), 4);
+        map.addControl(new GLargeMapControl());
+
+        establishRoute(map);
     }
 }
