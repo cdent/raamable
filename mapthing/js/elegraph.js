@@ -90,7 +90,7 @@ function load() {
                 map.setZoom(map.getBoundsZoomLevel(bounds));
                 map.setCenter(bounds.getCenter());
                 drawProfile(map, markers, altitudes);
-                //addTowers(map);
+                addTowers(map);
         });
     }
 
