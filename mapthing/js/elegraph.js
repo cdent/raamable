@@ -1,6 +1,11 @@
 
 function load() {
     var maxNodes = 222;
+    var towerIcon = new GIcon(G_DEFAULT_ICON);
+    towerIcon.image = "http://gmaps-samples.googlecode.com/svn/trunk/markers/blue/blank.png";
+    var towerMax = Infinity;
+    var towerMin = 0;
+
 
     // Draw an image which shows the elevation of the markers.
     // Attempt to scale the image so the height information is aligned
@@ -53,10 +58,12 @@ function load() {
                 for (var i=0; i<waypoints.length; i++) {
                     var lat = parseFloat(waypoints[i].getAttribute("lat"));
                     var lng = parseFloat(waypoints[i].getAttribute("lon"));
+                    if (lat < towerMin || lat > towerMax) {
+                        continue;
+                    }
                     var point = new GLatLng(lat,lng);
-                    // freq is not being set
-                    var freq = waypoints[i].getElementsByTagName('desc')[0].nodeValue;
-                    var marker = new GMarker(point, {title: freq});
+                    var freq = waypoints[i].getElementsByTagName('desc')[0].firstChild.nodeValue;
+                    var marker = new GMarker(point, {icon: towerIcon, title: freq});
                     map.addOverlay(marker);
                 }
             }
@@ -80,13 +87,17 @@ function load() {
                 for (var i = 0; i < lines.length; i++) {
                     var info = lines[i].split(',');
                     if (info.length >= 3) {
-                        var latlng = new GLatLng(info[0], info[1]);
+                        lat = info[0];
+                        lng = info[1];
+                        var latlng = new GLatLng(lat, lng);
                         markers[i] =  new GMarker(latlng, {title:info[2]});
                         bounds.extend(latlng);
                         map.addOverlay(markers[i]);
                         altitudes[i] = parseFloat(parseFloat(info[2]).toFixed(0));
                     }
                 }
+                towerMin = bounds.getSouthWest().lat()-2;
+                towerMax = bounds.getNorthEast().lat()+2;
                 map.setZoom(map.getBoundsZoomLevel(bounds));
                 map.setCenter(bounds.getCenter());
                 drawProfile(map, markers, altitudes);
