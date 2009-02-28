@@ -16,20 +16,21 @@ function load() {
         var min=Infinity, max=0;
         // ==== some Google Chart parameters ====
         var url = "http://chart.apis.google.com/chart?cht=lxy&amp;chs=1000x100&amp;chco=000000&amp;chm=B,33cc33,0,0,0&amp;chd=t:"
-        var multiplier = altitudes.length/maxNodes;
-        multiplier = parseInt(multiplier);
+        var inc = altitudes.length/maxNodes;
         var xs = [];
-        var ys = []
-        for (var i=0; i<maxNodes; i++) {
-            index = (i * multiplier);
+        var ys = [];
+        var ii = 0;
+        for (var i=0; i<altitudes.length; i += inc) {
+            var index = parseInt(i);
             // == filter out bogus values ==
             if (altitudes[index] < -10000000000) altitudes[index] = 0;
             // == find min and max values ==
-            if (altitudes[index] < min) { min = altitudes[index]; }
-            if (altitudes[index] > max) { max = altitudes[index]; }
+            if (altitudes[index] < min) min = altitudes[index];
+            if (altitudes[index] > max) max = altitudes[index];
             // == add to the Chart URL ==
-            ys[i] = altitudes[index];
-            xs[i] = map.fromLatLngToContainerPixel(markers[index].getPoint()).x;
+            ys[ii] = altitudes[index];
+            xs[ii] = map.fromLatLngToContainerPixel(markers[index].getLatLng()).x;
+            ii++;
         }
         var xdata = xs.join(',');
         var ydata = ys.join(',');
@@ -89,7 +90,7 @@ function load() {
                 map.setZoom(map.getBoundsZoomLevel(bounds));
                 map.setCenter(bounds.getCenter());
                 drawProfile(map, markers, altitudes);
-                addTowers(map);
+                //addTowers(map);
         });
     }
 
