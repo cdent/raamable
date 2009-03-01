@@ -5,6 +5,8 @@ function load() {
     towerIcon.image = "http://gmaps-samples.googlecode.com/svn/trunk/markers/blue/blank.png";
     var towerMax = Infinity;
     var towerMin = 0;
+    var timeIcon = new GIcon(G_DEFAULT_ICON);
+    timeIcon.image = "http://gmaps-samples.googlecode.com/svn/trunk/markers/orange/blank.png";
 
 
     // Draw an image which shows the elevation of the markers.
@@ -70,6 +72,23 @@ function load() {
         );
     }
 
+    // Add the RAAM route turns information to the map
+    function addTimeStations(map) {
+        GDownloadUrl('/data/R09TS.csv', function(data) {
+                lines = data.split("\n");
+                for (var i = 0; i < lines.length; i++) {
+                    var info = lines[i].split(',');
+                    if (info.length >= 3) {
+                        lat = info[0];
+                        lng = info[1];
+                        var latlng = new GLatLng(lat, lng);
+                        var marker =  new GMarker(latlng, {title:info[2], icon: timeIcon});
+                        map.addOverlay(marker);
+                    }
+                }
+        });
+    }
+
 
     // Read in latlongelv.csv which has lat,lon,elevation information.
     // Make a bounds
@@ -101,7 +120,7 @@ function load() {
                 map.setZoom(map.getBoundsZoomLevel(bounds));
                 map.setCenter(bounds.getCenter());
                 drawProfile(map, markers, altitudes);
-                //addTowers(map);
+                addTowers(map);
         });
     }
 
@@ -111,5 +130,6 @@ function load() {
         map.setCenter(new GLatLng(36, -100), 0);
         map.addControl(new GLargeMapControl());
         establishRoute(map);
+        addTimestations(map);
     }
 }
