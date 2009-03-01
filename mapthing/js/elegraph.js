@@ -156,6 +156,10 @@ function load() {
                 addTowers(gmap, routeBounds);
         });
     }
+    
+    function updateProfile(gmap) {
+        alert('you moved the map, update the profile!');
+    }
 
 
     if (GBrowserIsCompatible()) {
@@ -164,5 +168,8 @@ function load() {
         gmap.addControl(new GLargeMapControl());
         establishRoute(gmap);
         addTimeStations(gmap);
+        GEvent.addListener(gmap, 'moveend', function() {
+                updateProfile(gmap);
+        });
     }
 }
