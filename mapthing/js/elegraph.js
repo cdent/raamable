@@ -8,6 +8,8 @@ function load() {
     var profileWidth = 1000;
     var profileHeight = 100;
     var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.';
+    var timeIcon = new GIcon(G_DEFAULT_ICON);
+    timeIcon.image = "http://gmaps-samples.googlecode.com/svn/trunk/markers/orange/blank.png";
 
 
     // Draw an image which shows the elevation of the markers.
@@ -63,11 +65,11 @@ function load() {
 
 
     // Read in the data of where towers are and put them on the map
-    // Right now it puts all the towers on the map, which is not very helpful.
-    // Could just put ones on the map that are near to the route.
-    // Would be nice if they had better icons.
-    // The freq is not getting out of the way point (yet).
-    function addTowers(map) {
+    // Use the provided routeBounds array to only put markers down
+    // for towers that are near the route. Each item in the routeBounds
+    // array is a GBoundsLatLng which is the extent of ten towers,
+    // each one also extending the extent by 1 degree of both lat in lng.
+    function addTowers(map, routeBounds) {
         GDownloadUrl('/data/noaa.gpx', function(data) {
                 var xmlDoc = GXml.parse(data);
                 waypoints = xmlDoc.documentElement.getElementsByTagName('wpt');
@@ -78,12 +80,35 @@ function load() {
                         continue;
                     }
                     var point = new GLatLng(lat,lng);
-                    var freq = waypoints[i].getElementsByTagName('desc')[0].firstChild.nodeValue;
-                    var marker = new GMarker(point, {icon: towerIcon, title: freq});
-                    map.addOverlay(marker);
+                    for (var j=0; j<routeBounds.length; j++) {
+                        if (routeBounds[j].containsLatLng(point)) {
+                            var freq = waypoints[i].getElementsByTagName('desc')[0].firstChild.nodeValue;
+                            var marker = new GMarker(point, {icon: towerIcon, title: freq});
+                            map.addOverlay(marker);
+                            break;
+                        }
+                    }
                 }
             }
         );
+    }
+
+    // Add the RAAM route turns information to the map
+    // as organge markers.
+    function addTimeStations(map) {
+        GDownloadUrl('/data/R09TS.csv', function(data) {
+                lines = data.split("\n");
+                for (var i = 0; i < lines.length; i++) {
+                    var info = lines[i].split(',');
+                    if (info.length >= 3) {
+                        lat = parseFloat(info[0]);
+                        lng = parseFloat(info[1]);
+                        var latlng = new GLatLng(lat, lng);
+                        var marker =  new GMarker(latlng, {title:info[2], icon: timeIcon});
+                        map.addOverlay(marker);
+                    }
+                }
+        });
     }
 
 
@@ -99,25 +124,40 @@ function load() {
                 lines = data.split("\n");
                 var altitudes = [];
                 var markers = [];
+                var routeBounds = [];
+                var routeBound = new GLatLngBounds();
                 var bounds = new GLatLngBounds();
                 for (var i = 0; i < lines.length; i++) {
                     var info = lines[i].split(',');
                     if (info.length >= 3) {
-                        lat = info[0];
-                        lng = info[1];
+                        lat = parseFloat(info[0]);
+                        lng = parseFloat(info[1]);
                         var latlng = new GLatLng(lat, lng);
+                        // ne and sw are ways to make our extent
+                        // "more" so that we can later use them
+                        // for choosing which radio towers to put
+                        // on the map.
+                        var ne = new GLatLng(lat+1, lng-1);
+                        var sw = new GLatLng(lat-1, lng+1);
                         markers[i] =  new GMarker(latlng, {title:info[2]});
                         bounds.extend(latlng);
+                        routeBound.extend(latlng);
+                        routeBound.extend(ne);
+                        routeBound.extend(sw);
                         map.addOverlay(markers[i]);
                         altitudes[i] = parseFloat(parseFloat(info[2]).toFixed(0));
                     }
+                    if (i > 0 && i % 10 == 0) {
+                        routeBounds.push(routeBound);
+                        routeBound = new GLatLngBounds();
+                    }
                 }
-                towerMin = bounds.getSouthWest().lat()-2;
-                towerMax = bounds.getNorthEast().lat()+2;
+                towerMin = bounds.getSouthWest().lat() - 2;
+                towerMax = bounds.getNorthEast().lat() + 2;
                 map.setZoom(map.getBoundsZoomLevel(bounds));
                 map.setCenter(bounds.getCenter());
                 drawProfile(map, markers, altitudes);
-                addTowers(map);
+                addTowers(map, routeBounds);
         });
     }
 
@@ -127,5 +167,6 @@ function load() {
         map.setCenter(new GLatLng(36, -100), 0);
         map.addControl(new GLargeMapControl());
         establishRoute(map);
+        addTimeStations(map);
     }
 }
