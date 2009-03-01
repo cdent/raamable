@@ -18,32 +18,35 @@ function load() {
     //   Make it so if you zoom the map only the markers we can see influence
     //     the profile image.
     function drawProfile(map, markers, altitudes) {
-        var min=Infinity, max=0;
-        // ==== some Google Chart parameters ====
-        var url = "http://chart.apis.google.com/chart?cht=lxy&amp;chs=1000x100&amp;chco=000000&amp;chm=B,33cc33,0,0,0&amp;chd=t:"
-        var inc = altitudes.length/maxNodes;
-        var xs = [];
-        var ys = [];
-        var ii = 0;
-        for (var i=0; i<altitudes.length; i += inc) {
-            var index = parseInt(i);
-            // == filter out bogus values ==
-            if (altitudes[index] < -10000000000) altitudes[index] = 0;
-            // == find min and max values ==
-            if (altitudes[index] < min) min = altitudes[index];
-            if (altitudes[index] > max) max = altitudes[index];
-            // == add to the Chart URL ==
-            ys[ii] = altitudes[index];
-            xs[ii] = map.fromLatLngToContainerPixel(markers[index].getLatLng()).x;
-            ii++;
-        }
+        var xs = [], ys = [], min = Infinity, max = 0;
+        getPlotPoints(xs, ys);
         var xdata = xs.join(',');
         var ydata = ys.join(',');
-        url += xdata + '|' + ydata;
-        // == add min/max values to Chart URL ==
-        url += "&amp;chds=0,1000,"+min+","+max;
-        // == create the Google Chart image ==
-        document.getElementById("profile").innerHTML = '<img src="' +url+ '" width=1000 height=100 >';
+        $('#profile').html('<img src=' + googleChartUrl(xs, ys, min, max)
+                         + ' width=1000 height=100');
+
+        function getPlotPoints(xs, ys) {
+            var inc = altitudes.length/maxNodes;
+
+            for (var i=0; i<altitudes.length; i += inc) {
+                var index = parseInt(i);
+                // == filter out bogus values ==
+                if (altitudes[index] < -10000000000) altitudes[index] = 0;
+                // == find min and max values ==
+                if (altitudes[index] < min) min = altitudes[index];
+                if (altitudes[index] > max) max = altitudes[index];
+                // == add to the Chart URL ==
+                xs.push( map.fromLatLngToContainerPixel(markers[index].getLatLng()).x );
+                ys.push( altitudes[index] );
+            }
+        }
+    }
+
+    function googleChartUrl(xs, ys, min, max) {
+        return 'http://chart.apis.google.com/chart?cht=lxy&amp;chs=1000x100'
+             + '&amp;chco=000000&amp;chm=B,33cc33,0,0,0&amp;chd=t:'
+             + xs.join(',') + '|' + ys.join(',')
+             + '&amp;chds=0,1000,' + min + ',' + max;
     }
 
     // Read in the data of where towers are and put them on the map
