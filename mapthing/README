@@ -1,0 +1,8 @@
+
+This is a google app engine project that has a maps key for localhost:8001
+and another for raamapable.appspot.com. The code autodetects where it is
+being served from and is supposed to choose the write key.
+
+If you are on OS X and have the GoogleAppEngineLauncher mac app, you can
+point it at this directory et voila.
+

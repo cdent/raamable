@@ -24,7 +24,13 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.api.urlfetch import fetch
 
-GOOGLE_KEY = 'ABQIAAAAwvFhEUtSIa3VRWVU970fZRQXq7bWTC04Ff1KKaIsErBhwE7B5xSeyI_RzYuuCer6UmCT_rrEo49_dw'
+LOCALHOST_KEY = 'ABQIAAAAwvFhEUtSIa3VRWVU970fZRQXq7bWTC04Ff1KKaIsErBhwE7B5xSeyI_RzYuuCer6UmCT_rrEo49_dw'
+APPSPOT_KEY = 'ABQIAAAAwvFhEUtSIa3VRWVU970fZRRjmb6hDkNmtDi52ZWdEps4nk6ntxSujqTwIyJhN9uIRZN0fnCOXQDG5Q'
+
+if os.environ['SERVER_SOFTWARE'].startswith('Dev'):
+    GOOGLE_KEY = LOCALHOST_KEY
+else:
+    GOOGLE_KEY = APPSPOT_KEY
 
 PROXIES = {
         'alt' :
