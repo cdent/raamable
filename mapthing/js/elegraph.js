@@ -35,8 +35,8 @@ function load() {
             ys.push( altitudes[index] );
         }
 
-        $('#profile').html('<img src=' + googleChartUrl(xs, ys, min, max)
-                         + ' width=' + profileWidth + ' height=' + profileHeight);
+        $('#profile').html('<img src="' + googleChartUrl(xs, ys, min, max)
+                         + '" width="' + profileWidth + '" height="' + profileHeight + '"/>');
     }
 
     function googleChartUrl(xs, ys, min, max) {
