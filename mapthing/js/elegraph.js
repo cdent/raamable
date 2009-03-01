@@ -15,14 +15,10 @@ function load() {
     // Draw an image which shows the elevation of the markers.
     // Attempt to scale the image so the height information is aligned
     // with the points on the map.
-    // There are problems with this:
-    //   Using text encoding we can't put all the points on the graph.
-    //   When we limit the noumber of points, the graph doesn't finish.
     // So _Next_:
-    //   Use extended encoding.
     //   Make it so if you zoom the map only the markers we can see influence
     //     the profile image.
-    function drawProfile(map, markers, altitudes) {
+    function drawProfile(gmap, markers, altitudes) {
         var xs = [], ys = [], min = Infinity, max = 0;
 
         var inc = altitudes.length/maxNodes;
@@ -35,7 +31,7 @@ function load() {
             if (altitudes[index] < min) min = altitudes[index];
             if (altitudes[index] > max) max = altitudes[index];
             // == add to the Chart URL ==
-            xs.push( map.fromLatLngToContainerPixel(markers[index].getLatLng()).x );
+            xs.push( gmap.fromLatLngToContainerPixel(markers[index].getLatLng()).x );
             ys.push( altitudes[index] );
         }
 
@@ -64,12 +60,12 @@ function load() {
     }
 
 
-    // Read in the data of where towers are and put them on the map
+    // Read in the data of where towers are and put them on the gmap
     // Use the provided routeBounds array to only put markers down
     // for towers that are near the route. Each item in the routeBounds
     // array is a GBoundsLatLng which is the extent of ten towers,
     // each one also extending the extent by 1 degree of both lat in lng.
-    function addTowers(map, routeBounds) {
+    function addTowers(gmap, routeBounds) {
         GDownloadUrl('/data/noaa.gpx', function(data) {
                 var xmlDoc = GXml.parse(data);
                 waypoints = xmlDoc.documentElement.getElementsByTagName('wpt');
@@ -84,7 +80,7 @@ function load() {
                         if (routeBounds[j].containsLatLng(point)) {
                             var freq = waypoints[i].getElementsByTagName('desc')[0].firstChild.nodeValue;
                             var marker = new GMarker(point, {icon: towerIcon, title: freq});
-                            map.addOverlay(marker);
+                            gmap.addOverlay(marker);
                             break;
                         }
                     }
@@ -93,9 +89,9 @@ function load() {
         );
     }
 
-    // Add the RAAM route turns information to the map
+    // Add the RAAM route turns information to the gmap
     // as organge markers.
-    function addTimeStations(map) {
+    function addTimeStations(gmap) {
         GDownloadUrl('/data/R09TS.csv', function(data) {
                 lines = data.split("\n");
                 for (var i = 0; i < lines.length; i++) {
@@ -105,7 +101,7 @@ function load() {
                         lng = parseFloat(info[1]);
                         var latlng = new GLatLng(lat, lng);
                         var marker =  new GMarker(latlng, {title:info[2], icon: timeIcon});
-                        map.addOverlay(marker);
+                        gmap.addOverlay(marker);
                     }
                 }
         });
@@ -116,10 +112,10 @@ function load() {
     // Make a bounds
     // Make a marker for each one.
     // Extend the bounds to include the marker.
-    // Add the marker to the map.
+    // Add the marker to the gmap.
     // Record the altitude for later used in drawProfile.
-    // Once all the markers down, zoom the map to fit the bounds.
-    function establishRoute(map) {
+    // Once all the markers down, zoom the gmap to fit the bounds.
+    function establishRoute(gmap) {
         GDownloadUrl('/data/latlongelv.csv', function(data) {
                 var lines = data.split("\n");
                 var altitudes = [];
@@ -136,7 +132,7 @@ function load() {
                         // ne and sw are ways to make our extent
                         // "more" so that we can later use them
                         // for choosing which radio towers to put
-                        // on the map.
+                        // on the gmap.
                         var ne = new GLatLng(lat+1, lng-1);
                         var sw = new GLatLng(lat-1, lng+1);
                         markers[i] =  new GMarker(latlng, {title:info[2]});
@@ -144,7 +140,7 @@ function load() {
                         routeBound.extend(latlng);
                         routeBound.extend(ne);
                         routeBound.extend(sw);
-                        map.addOverlay(markers[i]);
+                        gmap.addOverlay(markers[i]);
                         altitudes[i] = parseFloat(parseFloat(info[2]).toFixed(0));
                     }
                     if (i > 0 && i % 10 == 0) {
@@ -154,19 +150,19 @@ function load() {
                 }
                 towerMin = bounds.getSouthWest().lat() - 2;
                 towerMax = bounds.getNorthEast().lat() + 2;
-                map.setZoom(map.getBoundsZoomLevel(bounds));
-                map.setCenter(bounds.getCenter());
-                drawProfile(map, markers, altitudes);
-                addTowers(map, routeBounds);
+                gmap.setZoom(gmap.getBoundsZoomLevel(bounds));
+                gmap.setCenter(bounds.getCenter());
+                drawProfile(gmap, markers, altitudes);
+                addTowers(gmap, routeBounds);
         });
     }
 
 
     if (GBrowserIsCompatible()) {
-        var map = new GMap2(document.getElementById("map"));
-        map.setCenter(new GLatLng(36, -100), 0);
-        map.addControl(new GLargeMapControl());
-        establishRoute(map);
-        addTimeStations(map);
+        var gmap = new GMap2(document.getElementById("map"));
+        gmap.setCenter(new GLatLng(36, -100), 0);
+        gmap.addControl(new GLargeMapControl());
+        establishRoute(gmap);
+        addTimeStations(gmap);
     }
 }
