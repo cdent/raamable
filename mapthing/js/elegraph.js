@@ -20,8 +20,6 @@ function load() {
     function drawProfile(map, markers, altitudes) {
         var xs = [], ys = [], min = Infinity, max = 0;
         getPlotPoints();
-        var xdata = xs.join(',');
-        var ydata = ys.join(',');
         $('#profile').html('<img src=' + googleChartUrl(xs, ys, min, max)
                          + ' width=1000 height=100');
 
