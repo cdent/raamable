@@ -105,7 +105,7 @@ function load() {
     // Once all the markers down, zoom the map to fit the bounds.
     function establishRoute(map) {
         GDownloadUrl('/data/latlongelv.csv', function(data) {
-                lines = data.split("\n");
+                var lines = data.split("\n");
                 var altitudes = [];
                 var markers = [];
                 var routeBounds = [];
@@ -114,8 +114,8 @@ function load() {
                 for (var i = 0; i < lines.length; i++) {
                     var info = lines[i].split(',');
                     if (info.length >= 3) {
-                        lat = parseFloat(info[0]);
-                        lng = parseFloat(info[1]);
+                        var lat = parseFloat(info[0]);
+                        var lng = parseFloat(info[1]);
                         var latlng = new GLatLng(lat, lng);
                         // ne and sw are ways to make our extent
                         // "more" so that we can later use them
