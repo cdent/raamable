@@ -19,16 +19,16 @@ function load() {
     //     the profile image.
     function drawProfile(map, markers, altitudes) {
         var xs = [], ys = [], min = Infinity, max = 0;
-        getPlotPoints(xs, ys);
+        getPlotPoints();
         var xdata = xs.join(',');
         var ydata = ys.join(',');
         $('#profile').html('<img src=' + googleChartUrl(xs, ys, min, max)
                          + ' width=1000 height=100');
 
-        function getPlotPoints(xs, ys) {
+        function getPlotPoints() {
             var inc = altitudes.length/maxNodes;
 
-            for (var i=0; i<altitudes.length; i += inc) {
+            for (var i = 0; i < altitudes.length; i += inc) {
                 var index = parseInt(i);
                 // == filter out bogus values ==
                 if (altitudes[index] < -10000000000) altitudes[index] = 0;
