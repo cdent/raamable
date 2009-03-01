@@ -1,10 +1,13 @@
 
 function load() {
-    var maxNodes = 222;
+    var maxNodes = 444;
     var towerIcon = new GIcon(G_DEFAULT_ICON);
     towerIcon.image = "http://gmaps-samples.googlecode.com/svn/trunk/markers/blue/blank.png";
     var towerMax = Infinity;
     var towerMin = 0;
+    var profileWidth = 1000;
+    var profileHeight = 100;
+    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.';
 
 
     // Draw an image which shows the elevation of the markers.
@@ -33,17 +36,31 @@ function load() {
             xs.push( map.fromLatLngToContainerPixel(markers[index].getLatLng()).x );
             ys.push( altitudes[index] );
         }
-        
+
         $('#profile').html('<img src=' + googleChartUrl(xs, ys, min, max)
-                         + ' width=1000 height=100');
+                         + ' width=' + profileWidth + ' height=' + profileHeight);
     }
 
     function googleChartUrl(xs, ys, min, max) {
-        return 'http://chart.apis.google.com/chart?cht=lxy&amp;chs=1000x100'
-             + '&amp;chco=000000&amp;chm=B,33cc33,0,0,0&amp;chd=t:'
-             + xs.join(',') + '|' + ys.join(',')
-             + '&amp;chds=0,1000,' + min + ',' + max;
+        // Scale to 0-4095
+        xs = $.map(xs, function(x) { return x/profileWidth*4095 });
+        ys = $.map(ys, function(y) { return (y-min)/(max-min)*4095 });
+
+        return 'http://chart.apis.google.com/chart?cht=lxy'
+             + '&amp;chs=' + profileWidth + 'x' + profileHeight
+             + '&amp;chco=000000&amp;chm=B,33cc33,0,0,0'
+             + '&amp;chds=0,4095,0,4095'
+             + '&amp;'
+             + 'chd=e:'
+             + $.map(xs, encodeExtended).join('')
+             + ','
+             + $.map(ys, encodeExtended).join('');
     }
+
+    function encodeExtended(n) {
+        return chars[n>>6] + chars[n&63];
+    }
+
 
     // Read in the data of where towers are and put them on the map
     // Right now it puts all the towers on the map, which is not very helpful.
