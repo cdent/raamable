@@ -183,8 +183,10 @@ function load() {
 
     if (GBrowserIsCompatible()) {
         var gmap = new GMap2(document.getElementById("map"));
+        gmap.addMapType(G_PHYSICAL_MAP);
         gmap.setCenter(new GLatLng(36, -100), 0);
         gmap.addControl(new GLargeMapControl());
+        gmap.addControl(new GMenuMapTypeControl());
         establishRoute(gmap);
         addTimeStations(gmap);
         GEvent.addListener(gmap, 'moveend', function() {
