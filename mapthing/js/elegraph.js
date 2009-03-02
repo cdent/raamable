@@ -51,7 +51,8 @@ function load() {
         xs = $.map(xs, function(x) { return x/profileWidth*4095 });
         ys = $.map(ys, function(y) { return (y-min)/(max-min)*4095 });
 
-        return 'http://chart.apis.google.com/chart?cht=lxy'
+        return 'http://chart.apis.google.com/chart?cht=lxy&amp;chxt=r'
+             + '&amp;chxl=0:|' + min + '|' + max
              + '&amp;chs=' + profileWidth + 'x' + profileHeight
              + '&amp;chco=000000&amp;chm=B,33cc33,0,0,0'
              + '&amp;chds=0,4095,0,4095'
