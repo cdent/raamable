@@ -163,7 +163,7 @@ function load() {
                 addTowers(gmap, routeBounds);
         });
     }
-    
+
     // When the map is moved or zoomed, redraw the profile.
     // We get the bounds of the map, make a list of the markers
     // that are in it, and redraw the profile.
