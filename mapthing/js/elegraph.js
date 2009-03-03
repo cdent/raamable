@@ -28,8 +28,6 @@ function load() {
     function drawProfile(gmap, markers) {
         mapWidth = gmap.getSize().width;
         profileWidth = Math.min(mapWidth, maxProfileWidth); 
-        //alert(profileWidth);
-        //profileWidth = maxProfileWidth;
         
         var xs = [], ys = [], min = Infinity, max = 0;
 
@@ -176,7 +174,7 @@ function load() {
 
         GEvent.addListener(gdir, 'load', function() {
             gmap.addOverlay(gdir.getPolyline());
-            j += 25;
+            j += 24;
             if (j < turn_markers.length)
                 addPolyline(j);
         });
