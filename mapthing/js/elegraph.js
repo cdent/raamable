@@ -11,13 +11,20 @@ var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.';
 
 // Weather tower Icon
 var towerIcon = new GIcon(G_DEFAULT_ICON);
-towerIcon.image = "http://gmaps-samples.googlecode.com/svn/trunk/markers/blue/blank.png";
+towerIcon.image = "/data/Tall_Tower.png";
+towerIcon.shadow = null;
 // For determining the window into which towers are place (near the map)
 var towerMax = Infinity;
 var towerMin = 0;
 
+// turn icon
+var turnIcon = new GIcon(G_DEFAULT_ICON);
+turnIcon.iconSize = new GSize(10,20);
+turnIcon.iconAnchor = new GPoint(5,20);
+turnIcon.shadow = null;
+
 // Time Station Icon
-var timeIcon = new GIcon(G_DEFAULT_ICON);
+var timeIcon = new GIcon(turnIcon);
 timeIcon.image = "http://gmaps-samples.googlecode.com/svn/trunk/markers/orange/blank.png";
 
 
@@ -88,7 +95,7 @@ function _addTowersCallback(data, gmap, bounds) {
         for (var j = 0; j < bounds.length; j++) {
             if (bounds[j].containsLatLng(point)) {
                 var freq = waypoints[i].getElementsByTagName('desc')[0].firstChild.nodeValue;
-                var marker = new GMarker(point, {icon: towerIcon, title: freq});
+                var marker = new GMarker(point, {icon: towerIcon, title: freq, clickable: false});
                 marker.freq = freq;
                 gmap.addOverlay(marker);
                 break;
@@ -111,7 +118,7 @@ function _addTimeStationsCallback(data, gmap) {
             lat = parseFloat(info[0]);
             lng = parseFloat(info[1]);
             var latlng = new GLatLng(lat, lng);
-            var marker =  new GMarker(latlng, {title:info[2], icon: timeIcon});
+            var marker =  new GMarker(latlng, {title:info[2], icon: timeIcon, clickable: false});
             gmap.addOverlay(marker);
         }
     }
@@ -133,9 +140,9 @@ function _establishRouteCallback(data, gmap, map_add, afterRouteFunction) {
             // "more" so that we can later use them
             // for choosing which radio towers to put
             // on the gmap.
-            var ne = new GLatLng(lat+1, lng-1);
-            var sw = new GLatLng(lat-1, lng+1);
-            turn_markers[i] =  new GMarker(latlng, {title:info[2]});
+            var ne = new GLatLng(lat + 1, lng - 1);
+            var sw = new GLatLng(lat - 1, lng + 1);
+            turn_markers[i] =  new GMarker(latlng, {title:info[2], icon: turnIcon, clickable: false});
             bounds.extend(latlng);
             routeBound.extend(latlng);
             routeBound.extend(ne);

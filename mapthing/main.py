@@ -46,6 +46,21 @@ class MainHandler(webapp.RequestHandler):
               }
       self.response.out.write(template.render(path, template_values))
 
+# XXX Check out that awesome duplication with AboutHandler
+class CreditsHandler(webapp.RequestHandler):
+
+  def get(self):
+      path = os.path.join(os.path.dirname(__file__), 'templates', 'credits.html')
+      template_values = { }
+      self.response.out.write(template.render(path, template_values))
+
+class AboutHandler(webapp.RequestHandler):
+
+  def get(self):
+      path = os.path.join(os.path.dirname(__file__), 'templates', 'about.html')
+      template_values = { }
+      self.response.out.write(template.render(path, template_values))
+
 class AltHandler(webapp.RequestHandler):
 
   def get(self):
@@ -77,6 +92,8 @@ class ProxyHandler(webapp.RequestHandler):
 
 def main():
   application = webapp.WSGIApplication([('/', MainHandler),
+      ('/credits', CreditsHandler),
+      ('/about', AboutHandler),
       ('/alt', AltHandler),
       ('/proxy', ProxyHandler)
       ], debug=True)
