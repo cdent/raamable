@@ -1,4 +1,8 @@
 
+body {
+    font-family: Helvetica, sans-serif;
+}
+
 #content {
     margin: 1em;
     padding: 1em;
