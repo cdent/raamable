@@ -162,7 +162,31 @@ function load() {
                 gmap.setCenter(bounds.getCenter());
                 drawProfile(gmap, turn_markers);
                 addTowers(gmap, routeBounds);
+                blueLine(gmap, turn_markers);
         });
+    }
+    
+    function blueLine(gmap, turn_markers) {
+        var gdir = new GDirections();
+        var j = 0;
+
+        GEvent.addListener(gdir, 'load', function() {
+            gmap.addOverlay(gdir.getPolyline());
+            j += 25;
+            if (j < turn_markers.length)
+                addPolyline(j);
+        });
+
+        addPolyline(0);
+
+        function addPolyline(n) {
+            var waypoints = []; // TODO add first time station first; last time station last
+            for (var i = n; (i < n+25) && (i < turn_markers.length); i++) {
+                waypoints.push( turn_markers[i].getLatLng().toUrlValue() );
+            }
+
+            gdir.loadFromWaypoints(waypoints, {getPolyline: true});
+        }
     }
 
     // When the map is moved or zoomed, redraw the profile.
