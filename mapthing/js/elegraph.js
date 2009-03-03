@@ -188,13 +188,19 @@ function establishRoute(gmap, map_add, afterRouteFunction) {
     });
 }
 
-function blueLine(gmap, grow) {
+function blueLine(gmap, lengthDiv) {
     var gdir = new GDirections();
     var j = 0;
+    var lineLength = 0;
 
     GEvent.addListener(gdir, 'load', function() {
         polyline = gdir.getPolyline();
         gmap.addOverlay(polyline);
+        if (lengthDiv) {
+            length = (polyline.getLength()/1000);
+            lineLength += length;
+            lengthDiv.innerHTML = lineLength.toFixed(0) + ' km';
+        }
         j += 24;
         if (j < turn_markers.length)
             addPolyline(j);
@@ -206,9 +212,6 @@ function blueLine(gmap, grow) {
         var waypoints = []; // TODO add first time station first; last time station last
         for (var i = n; (i < n+25) && (i < turn_markers.length); i++) {
             waypoints.push( turn_markers[i].getLatLng().toUrlValue() );
-            if (grow) {
-                gmap.panTo(turn_markers[i].getLatLng());
-            }
         }
 
         gdir.loadFromWaypoints(waypoints, {getPolyline: true});
@@ -263,7 +266,8 @@ function altload() {
 
 function frontload() {
         var gmap = setupMap(35, -100, 4);
+        var lengthDiv = document.getElementById("length");
         establishRoute(gmap, 0, function(gmap, routeBounds){
-                blueLine(gmap, 0);
+                blueLine(gmap, lengthDiv);
         });
 }
