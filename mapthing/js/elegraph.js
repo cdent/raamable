@@ -3,9 +3,9 @@ function load() {
     // Global list of GMarkers of all the turns on the route
     var turn_markers = [];
     // How many slices do we want in the altitude profile
-    var maxSlices = 444;
+    var maxSlices = 444; 
     // The size of the profile image
-    var profileWidth = 1000;
+    var maxProfileWidth = 1000;
     var profileHeight = 100;
     // The chars used for extended encoding
     var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.';
@@ -26,6 +26,11 @@ function load() {
     // Attempt to scale the image so the height information is aligned
     // with the points on the map.
     function drawProfile(gmap, markers) {
+        mapWidth = gmap.getSize().width;
+        profileWidth = Math.min(mapWidth, maxProfileWidth); 
+        //alert(profileWidth);
+        //profileWidth = maxProfileWidth;
+        
         var xs = [], ys = [], min = Infinity, max = 0;
 
         var inc = markers.length/maxSlices;
@@ -160,7 +165,6 @@ function load() {
                 towerMax = bounds.getNorthEast().lat() + 2;
                 gmap.setZoom(gmap.getBoundsZoomLevel(bounds));
                 gmap.setCenter(bounds.getCenter());
-                drawProfile(gmap, turn_markers);
                 addTowers(gmap, routeBounds);
         });
     }
@@ -182,14 +186,19 @@ function load() {
     }
 
     if (GBrowserIsCompatible()) {
-        var gmap = new GMap2(document.getElementById("map"));
+        var mapContainer = document.getElementById("map");
+        var gmap = new GMap2(mapContainer);
         gmap.addMapType(G_PHYSICAL_MAP);
         gmap.setCenter(new GLatLng(36, -100), 0);
         gmap.addControl(new GLargeMapControl());
         gmap.addControl(new GMenuMapTypeControl());
+        gmap.enableGoogleBar();
         establishRoute(gmap);
         addTimeStations(gmap);
         GEvent.addListener(gmap, 'moveend', function() {
+                updateProfile(gmap);
+        });
+        GEvent.addDomListener(window, 'resize', function() {
                 updateProfile(gmap);
         });
     }
