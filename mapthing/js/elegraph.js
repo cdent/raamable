@@ -152,8 +152,9 @@ function _establishRouteCallback(data, gmap, map_add, afterRouteFunction) {
     }
     towerMin = bounds.getSouthWest().lat() - 2;
     towerMax = bounds.getNorthEast().lat() + 2;
-    gmap.setZoom(gmap.getBoundsZoomLevel(bounds));
-    gmap.setCenter(bounds.getCenter());
+    if (map_add) {
+        gmap.setCenter(bounds.getCenter());
+    }
     afterRouteFunction(gmap, routeBounds);
 }
 
@@ -180,12 +181,13 @@ function establishRoute(gmap, map_add, afterRouteFunction) {
     });
 }
 
-function blueLine(gmap) {
+function blueLine(gmap, grow) {
     var gdir = new GDirections();
     var j = 0;
 
     GEvent.addListener(gdir, 'load', function() {
-        gmap.addOverlay(gdir.getPolyline());
+        polyline = gdir.getPolyline();
+        gmap.addOverlay(polyline);
         j += 24;
         if (j < turn_markers.length)
             addPolyline(j);
@@ -197,6 +199,9 @@ function blueLine(gmap) {
         var waypoints = []; // TODO add first time station first; last time station last
         for (var i = n; (i < n+25) && (i < turn_markers.length); i++) {
             waypoints.push( turn_markers[i].getLatLng().toUrlValue() );
+            if (grow) {
+                gmap.panTo(turn_markers[i].getLatLng());
+            }
         }
 
         gdir.loadFromWaypoints(waypoints, {getPolyline: true});
@@ -219,24 +224,25 @@ function updateProfile(gmap) {
     }
 }
 
-function setupMap() {
+function setupMap(lat,lng, zoom) {
         var mapContainer = document.getElementById("map");
         var gmap = new GMap2(mapContainer);
         gmap.addMapType(G_PHYSICAL_MAP);
         gmap.setMapType(G_PHYSICAL_MAP);
-        gmap.setCenter(new GLatLng(36, -100), 3);
+        gmap.setCenter(new GLatLng(lat, lng), zoom);
         return gmap;
 }
 
 function altload() {
     if (GBrowserIsCompatible()) {
-        var gmap = setupMap()
+        var gmap = setupMap(35, -100, 4)
         gmap.addControl(new GLargeMapControl());
         gmap.addControl(new GMenuMapTypeControl());
         gmap.enableGoogleBar();
+        gmap.enableContinuousZoom()
         establishRoute(gmap, 1, function(gmap, routeBounds){
                 addTowers(gmap, routeBounds);
-                blueLine(gmap);
+                blueLine(gmap, 0);
         });
         addTimeStations(gmap);
         GEvent.addListener(gmap, 'moveend', function() {
@@ -249,8 +255,8 @@ function altload() {
 }
 
 function frontload() {
-        var gmap = setupMap()
+        var gmap = setupMap(35, -100, 4);
         establishRoute(gmap, 0, function(gmap, routeBounds){
-                blueLine(gmap);
+                blueLine(gmap, 0);
         });
 }
